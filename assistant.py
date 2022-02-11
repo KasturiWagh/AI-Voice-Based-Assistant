@@ -8,11 +8,30 @@ import sys
 import webbrowser
 from datetime import date
 
+
 engine=pyttsx3.init()
 engine.setProperty("rate", 150)
 voices = engine.getProperty("voices")
 engine.setProperty('voice', voices [1].id)
 recognizer=sr.Recognizer()
+
+
+def takeCommand():
+    with sr.Microphone() as source:
+        recognizer.adjust_for_ambient_noise(source,duration=1)
+        print('\n')
+        print("Start Speaking for note!!")
+        engine_talk('listening.. for note ')
+        audio=recognizer.listen(source)
+    try:
+        print("Recognizing... for note")   
+        query = recognizer.recognize_google(audio, language ='en-in')
+        print(f"User said: {query}\n")
+    except Exception as e:
+        print(e)   
+        print("Unable to Recognize your voice.") 
+        return "None" 
+    return query
 
 
 def engine_talk(text):
@@ -56,18 +75,6 @@ def run_alexa():
             pywhatkit.playonyt(song)
 
 
-        elif 'date' in command:
-            today = date.today()
-            d2 = today.strftime("%B %d, %Y")
-            print("Today's Date is ", d2)
-            engine_talk('Today is : '+ d2)
-
-        elif 'time' in command:
-            time = datetime.datetime.now().strftime('%I:%M %p')
-            print('Current time is', time)
-            engine_talk('and current time is '+ time)
-
-
         elif 'date and time' in command :
             today = date.today()
             time = datetime.datetime.now().strftime('%I:%M %p')
@@ -100,6 +107,28 @@ def run_alexa():
             print("Today's Date is ", d2)
             engine_talk('The todays date is')
             engine_talk(d2)
+
+        
+        elif "write a note" in command:
+            engine_talk("What should i write")
+            note = takeCommand()
+            file = open('new.txt', 'w')
+            engine_talk("Should i include date and time")
+            snfm = takeCommand()
+            if 'yes' in snfm or 'sure' in snfm:
+                strTime = datetime.datetime.now().strftime('%I:%M %p')
+                file.write(strTime)
+                file.write(" :- ")
+                file.write(note)
+            else:
+                file.write(note)
+
+        elif "show note" in command:
+            engine_talk("Showing Notes")
+            file = open("new.txt", "r")
+            webbrowser.open("new.txt")
+            print(file.read())
+            engine_talk(file.read(6))
 
         elif 'tell me about' in command:
             name = command.replace('tell me about' , '')
